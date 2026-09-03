@@ -21,40 +21,49 @@
     </nav>
 
     <main id="app-content">
+        <!-- सामान की खरीद -->
         <section id="purchases" class="tab-content active">
             <h2>सामान की खरीद</h2>
-            <form onsubmit="addData(event, 'purchases')">
+            <form onsubmit="saveData(event, 'purchases')">
+                <input type="hidden" id="purchases-id">
                 <input type="text" id="purchases-desc" placeholder="सामान का नाम..." required>
                 <input type="number" id="purchases-amt" placeholder="रकम (₹)" required>
                 <input type="date" id="purchases-date" required>
-                <button type="submit" class="btn-primary">सेव करें</button>
+                <label class="file-label">बिल/सामान की फोटो (Optional):</label>
+                <input type="file" id="purchases-img" accept="image/*">
+                <button type="submit" id="btn-purchases" class="btn-primary">सेव करें</button>
             </form>
             <div class="list-container" id="purchases-list"></div>
         </section>
 
+        <!-- खर्च -->
         <section id="expenses" class="tab-content">
             <h2>सामान्य खर्च</h2>
-            <form onsubmit="addData(event, 'expenses')">
+            <form onsubmit="saveData(event, 'expenses')">
+                <input type="hidden" id="expenses-id">
                 <input type="text" id="expenses-desc" placeholder="खर्च का विवरण..." required>
                 <input type="number" id="expenses-amt" placeholder="रकम (₹)" required>
                 <input type="date" id="expenses-date" required>
-                <button type="submit" class="btn-primary">सेव करें</button>
+                <button type="submit" id="btn-expenses" class="btn-primary">सेव करें</button>
             </form>
             <div class="list-container" id="expenses-list"></div>
         </section>
 
+        <!-- पर्सनल खर्च -->
         <section id="personal" class="tab-content">
             <h2>पर्सनल खर्च</h2>
             <button class="btn-share" onclick="shareOnWhatsApp('personal')"><i class="fab fa-whatsapp"></i> रिपोर्ट शेयर करें</button>
-            <form onsubmit="addData(event, 'personal')">
+            <form onsubmit="saveData(event, 'personal')">
+                <input type="hidden" id="personal-id">
                 <input type="text" id="personal-desc" placeholder="पर्सनल खर्च विवरण..." required>
                 <input type="number" id="personal-amt" placeholder="रकम (₹)" required>
                 <input type="date" id="personal-date" required>
-                <button type="submit" class="btn-primary">सेव करें</button>
+                <button type="submit" id="btn-personal" class="btn-primary">सेव करें</button>
             </form>
             <div class="list-container" id="personal-list"></div>
         </section>
 
+        <!-- रिमाइंडर -->
         <section id="reminders" class="tab-content">
             <h2>रिमाइंडर</h2>
             <form onsubmit="addReminder(event)">
@@ -64,7 +73,7 @@
             </form>
             <div class="list-container" id="reminders-list"></div>
         </section>
-    </main> 
+    </main>
 
     <script src="app.js"></script>
 </body>
