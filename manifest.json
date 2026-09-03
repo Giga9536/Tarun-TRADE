@@ -1,0 +1,16 @@
+{
+    "name": "My Tracker Pro",
+    "short_name": "Tracker",
+    "description": "पर्सनल खर्च और रिमाइंडर ट्रैक करने का ऐप",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#F3F4F6",
+    "theme_color": "#1E3A8A",
+    "icons": [
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
