@@ -95,6 +95,7 @@ function loadData(category) {
                         <p><i class="far fa-calendar-alt"></i> ${item.date} | <strong>₹${item.amt}</strong></p>
                     </div>
                 </div>
+                <!-- यहाँ तीनों बटन (शेयर, एडिट, डिलीट) एक साथ एक साइज में हैं -->
                 <div class="card-actions">
                     ${shareBtnHtml}
                     <button class="btn-edit" onclick="editData('${category}', ${item.id})"><i class="fas fa-edit"></i></button>
@@ -127,21 +128,26 @@ function shareSingleItem(category, id) {
     }
 }
 
-// WhatsApp Monthly Report Share
+// WhatsApp Monthly Report Share (FIXED)
 function shareMonthlyReport(category) {
     let data = JSON.parse(localStorage.getItem(category)) || [];
     
-    // Get current month and year
-    let currentMonth = new Date().getMonth();
-    let currentYear = new Date().getFullYear();
+    if(data.length === 0) {
+        alert('शेयर करने के लिए कोई डेटा नहीं है!');
+        return;
+    }
+    
+    // इस महीने की रिपोर्ट निकालने का सटीक तरीका (YYYY-MM)
+    let currentMonthStr = new Date().toISOString().slice(0, 7); 
 
-    // Filter data for the current month
     let monthlyData = data.filter(item => {
-        let itemDate = new Date(item.date);
-        return itemDate.getMonth() === currentMonth && itemDate.getFullYear() === currentYear;
+        return item.date && item.date.startsWith(currentMonthStr);
     });
 
-    if(monthlyData.length === 0) return alert('इस महीने का कोई डेटा नहीं है!');
+    if(monthlyData.length === 0) {
+        alert('इस महीने का कोई डेटा नहीं मिला!');
+        return;
+    }
     
     let catName = category === 'purchases' ? 'सामान खरीद' : 'सामान्य खर्च';
     let text = `*📊 ${catName} - इस महीने की रिपोर्ट:*\n\n`;
@@ -152,7 +158,7 @@ function shareMonthlyReport(category) {
         total += parseFloat(item.amt);
     });
     
-    text += `\n*कुल खर्च: ₹${total}*`;
+    text += `\n*कुल: ₹${total}*`;
     
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
@@ -195,7 +201,6 @@ function loadReminders() {
     });
 }
 
-// Check reminders every minute
 setInterval(() => {
     let data = JSON.parse(localStorage.getItem('reminders')) || [];
     let now = new Date();
@@ -213,7 +218,6 @@ setInterval(() => {
     localStorage.setItem('reminders', JSON.stringify(data));
 }, 60000);
 
-// Initialize
 window.onload = () => {
     Notification.requestPermission(); 
     loadData('purchases');
