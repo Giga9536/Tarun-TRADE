@@ -7,20 +7,72 @@ function switchTab(tabId) {
     loadData(tabId);
 }
 
-// Add Purchase/Expense/Personal Data
-function addData(e, category) {
+// Convert Image to Base64 String for Local Storage
+function getBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
+// Save or Update Data
+async function saveData(e, category) {
     e.preventDefault();
+    const idField = document.getElementById(`${category}-id`);
+    const id = idField.value;
     const desc = document.getElementById(`${category}-desc`).value;
     const amt = document.getElementById(`${category}-amt`).value;
     const date = document.getElementById(`${category}-date`).value;
 
-    const item = { id: Date.now(), desc, amt, date };
+    let imgData = null;
+    if (category === 'purchases') {
+        const fileInput = document.getElementById('purchases-img');
+        if (fileInput.files.length > 0) {
+            imgData = await getBase64(fileInput.files[0]);
+        }
+    }
+
     let data = JSON.parse(localStorage.getItem(category)) || [];
-    data.push(item);
+
+    if (id) {
+        // Edit Existing Entry
+        let index = data.findIndex(item => item.id == id);
+        if (index !== -1) {
+            data[index].desc = desc;
+            data[index].amt = amt;
+            data[index].date = date;
+            if (imgData) data[index].img = imgData; // Update image only if new one selected
+        }
+    } else {
+        // Add New Entry
+        const item = { id: Date.now(), desc, amt, date, img: imgData };
+        data.push(item);
+    }
+
     localStorage.setItem(category, JSON.stringify(data));
     
+    // Reset Form
     e.target.reset();
+    idField.value = '';
+    document.getElementById(`btn-${category}`).innerText = 'सेव करें';
     loadData(category);
+}
+
+// Edit Data (Fills the form)
+function editData(category, id) {
+    let data = JSON.parse(localStorage.getItem(category)) || [];
+    let item = data.find(i => i.id == id);
+    if (item) {
+        document.getElementById(`${category}-desc`).value = item.desc;
+        document.getElementById(`${category}-amt`).value = item.amt;
+        document.getElementById(`${category}-date`).value = item.date;
+        document.getElementById(`${category}-id`).value = item.id;
+        
+        document.getElementById(`btn-${category}`).innerText = 'अपडेट करें';
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top to see form
+    }
 }
 
 // Load Data to UI
@@ -31,13 +83,19 @@ function loadData(category) {
     
     container.innerHTML = '';
     data.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(item => {
+        let imageHtml = (category === 'purchases' && item.img) ? `<img src="${item.img}" class="receipt-img" alt="Bill">` : '';
+        
         container.innerHTML += `
             <div class="card">
-                <div class="card-info">
-                    <h4>${item.desc}</h4>
-                    <p><i class="far fa-calendar-alt"></i> ${item.date} | <strong>₹${item.amt}</strong></p>
+                <div class="card-content">
+                    ${imageHtml}
+                    <div class="card-info">
+                        <h4>${item.desc}</h4>
+                        <p><i class="far fa-calendar-alt"></i> ${item.date} | <strong>₹${item.amt}</strong></p>
+                    </div>
                 </div>
                 <div class="card-actions">
+                    <button class="btn-edit" onclick="editData('${category}', ${item.id})"><i class="fas fa-edit"></i></button>
                     <button class="btn-delete" onclick="deleteData('${category}', ${item.id})"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
@@ -47,10 +105,12 @@ function loadData(category) {
 
 // Delete Data
 function deleteData(category, id) {
-    let data = JSON.parse(localStorage.getItem(category)) || [];
-    data = data.filter(item => item.id !== id);
-    localStorage.setItem(category, JSON.stringify(data));
-    loadData(category);
+    if(confirm("क्या आप सच में इसे डिलीट करना चाहते हैं?")) {
+        let data = JSON.parse(localStorage.getItem(category)) || [];
+        data = data.filter(item => item.id !== id);
+        localStorage.setItem(category, JSON.stringify(data));
+        loadData(category);
+    }
 }
 
 // WhatsApp Report Share
@@ -119,7 +179,7 @@ setInterval(() => {
             } else {
                 alert(`रिमाइंडर: ${item.title}`);
             }
-            item.notified = true; // Mark as notified
+            item.notified = true; 
         }
     });
     localStorage.setItem('reminders', JSON.stringify(data));
@@ -127,11 +187,6 @@ setInterval(() => {
 
 // Initialize
 window.onload = () => {
-    Notification.requestPermission(); // Request notification permission
+    Notification.requestPermission(); 
     loadData('purchases');
 };
-
-// Register Service Worker for PWA
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-}
