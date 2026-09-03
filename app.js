@@ -37,23 +37,20 @@ async function saveData(e, category) {
     let data = JSON.parse(localStorage.getItem(category)) || [];
 
     if (id) {
-        // Edit Existing Entry
         let index = data.findIndex(item => item.id == id);
         if (index !== -1) {
             data[index].desc = desc;
             data[index].amt = amt;
             data[index].date = date;
-            if (imgData) data[index].img = imgData; // Update image only if new one selected
+            if (imgData) data[index].img = imgData; 
         }
     } else {
-        // Add New Entry
         const item = { id: Date.now(), desc, amt, date, img: imgData };
         data.push(item);
     }
 
     localStorage.setItem(category, JSON.stringify(data));
     
-    // Reset Form
     e.target.reset();
     idField.value = '';
     document.getElementById(`btn-${category}`).innerText = 'सेव करें';
@@ -71,7 +68,7 @@ function editData(category, id) {
         document.getElementById(`${category}-id`).value = item.id;
         
         document.getElementById(`btn-${category}`).innerText = 'अपडेट करें';
-        window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top to see form
+        window.scrollTo({ top: 0, behavior: 'smooth' }); 
     }
 }
 
@@ -85,6 +82,10 @@ function loadData(category) {
     data.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(item => {
         let imageHtml = (category === 'purchases' && item.img) ? `<img src="${item.img}" class="receipt-img" alt="Bill">` : '';
         
+        // WhatsApp Share icon only for Purchases and Expenses
+        let shareBtnHtml = (category === 'purchases' || category === 'expenses') ? 
+            `<button class="btn-share-item" onclick="shareSingleItem('${category}', ${item.id})"><i class="fab fa-whatsapp"></i></button>` : '';
+        
         container.innerHTML += `
             <div class="card">
                 <div class="card-content">
@@ -95,6 +96,7 @@ function loadData(category) {
                     </div>
                 </div>
                 <div class="card-actions">
+                    ${shareBtnHtml}
                     <button class="btn-edit" onclick="editData('${category}', ${item.id})"><i class="fas fa-edit"></i></button>
                     <button class="btn-delete" onclick="deleteData('${category}', ${item.id})"><i class="fas fa-trash"></i></button>
                 </div>
@@ -113,18 +115,44 @@ function deleteData(category, id) {
     }
 }
 
-// WhatsApp Report Share
-function shareOnWhatsApp(category) {
+// WhatsApp Single Item Share
+function shareSingleItem(category, id) {
     let data = JSON.parse(localStorage.getItem(category)) || [];
-    if(data.length === 0) return alert('शेयर करने के लिए कोई डेटा नहीं है!');
+    let item = data.find(i => i.id == id);
+    if(item) {
+        let catName = category === 'purchases' ? 'सामान खरीद' : 'खर्च';
+        let text = `*📦 ${catName} की जानकारी:*\n\n🔸 विवरण: ${item.desc}\n🔸 रकम: ₹${item.amt}\n🔸 तारीख: ${item.date}`;
+        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+}
+
+// WhatsApp Monthly Report Share
+function shareMonthlyReport(category) {
+    let data = JSON.parse(localStorage.getItem(category)) || [];
     
-    let text = `*📊 मेरी ${category === 'personal' ? 'पर्सनल खर्च' : ''} रिपोर्ट:*\n\n`;
+    // Get current month and year
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+
+    // Filter data for the current month
+    let monthlyData = data.filter(item => {
+        let itemDate = new Date(item.date);
+        return itemDate.getMonth() === currentMonth && itemDate.getFullYear() === currentYear;
+    });
+
+    if(monthlyData.length === 0) return alert('इस महीने का कोई डेटा नहीं है!');
+    
+    let catName = category === 'purchases' ? 'सामान खरीद' : 'सामान्य खर्च';
+    let text = `*📊 ${catName} - इस महीने की रिपोर्ट:*\n\n`;
     let total = 0;
-    data.forEach(item => {
+    
+    monthlyData.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(item => {
         text += `🔸 ${item.date} - ${item.desc}: ₹${item.amt}\n`;
         total += parseFloat(item.amt);
     });
-    text += `\n*कुल: ₹${total}*`;
+    
+    text += `\n*कुल खर्च: ₹${total}*`;
     
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
