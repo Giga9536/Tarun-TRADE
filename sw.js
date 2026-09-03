@@ -1,4 +1,4 @@
-const CACHE_NAME = 'my-tracker-v1';
+const CACHE_NAME = 'my-tracker-v2'; // वर्जन 2 कर दिया गया है
 const urlsToCache = [
   './',
   './index.html',
@@ -26,5 +26,20 @@ self.addEventListener('fetch', event => {
         }
         return fetch(event.request);
       })
+  );
+});
+
+// पुरानी फाइलों को हटाने का कोड
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cache => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache);
+          }
+        })
+      );
+    })
   );
 });
