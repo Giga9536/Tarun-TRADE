@@ -24,6 +24,7 @@
         <!-- सामान की खरीद -->
         <section id="purchases" class="tab-content active">
             <h2>सामान की खरीद</h2>
+            <button class="btn-share" onclick="shareMonthlyReport('purchases')"><i class="fab fa-whatsapp"></i> पूरे महीने की रिपोर्ट शेयर करें</button>
             <form onsubmit="saveData(event, 'purchases')">
                 <input type="hidden" id="purchases-id">
                 <input type="text" id="purchases-desc" placeholder="सामान का नाम..." required>
@@ -39,6 +40,7 @@
         <!-- खर्च -->
         <section id="expenses" class="tab-content">
             <h2>सामान्य खर्च</h2>
+            <button class="btn-share" onclick="shareMonthlyReport('expenses')"><i class="fab fa-whatsapp"></i> पूरे महीने की रिपोर्ट शेयर करें</button>
             <form onsubmit="saveData(event, 'expenses')">
                 <input type="hidden" id="expenses-id">
                 <input type="text" id="expenses-desc" placeholder="खर्च का विवरण..." required>
@@ -52,7 +54,7 @@
         <!-- पर्सनल खर्च -->
         <section id="personal" class="tab-content">
             <h2>पर्सनल खर्च</h2>
-            <button class="btn-share" onclick="shareOnWhatsApp('personal')"><i class="fab fa-whatsapp"></i> रिपोर्ट शेयर करें</button>
+            <!-- यहाँ से WhatsApp शेयर बटन हटा दिया गया है -->
             <form onsubmit="saveData(event, 'personal')">
                 <input type="hidden" id="personal-id">
                 <input type="text" id="personal-desc" placeholder="पर्सनल खर्च विवरण..." required>
